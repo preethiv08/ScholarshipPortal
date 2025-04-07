@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"> <!-- Compatibility with IE -->
+    <title>Scholarship Apply Links</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.3/nouislider.min.css" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin: 20px auto;
+        }
+        h1 {
+            color: #343a40;
+            margin-bottom: 20px;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        td {
+            vertical-align: middle;
+        }
+        .apply-link {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .apply-link:hover {
+            text-decoration: underline;
+        }
+        .footer {
+            text-align: center;
+            margin: 20px 0;
+            color: #6c757d;
+        }
+        .slider-container {
+            margin-top: 1rem;
+        }
+        /* Custom styles for the slider */
+        .noUi-target {
+            height: 10px;
+            background: #007bff; /* Main color for the track */
+        }
+        .noUi-handle {
+            border-radius: 50%;
+            background: #ffffff; /* Handle color */
+            border: 2px solid #007bff; /* Border color matching UI */
+            height: 3px; /* Smaller handle height */
+            width: 3px; /* Smaller handle width */
+            box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+            top: -2.5px; /* Adjust the top position to center it better */
+        }
+        .noUi-handle:before {
+            display: none; /* Hide the tooltip */
+        }
+        .noUi-connect {
+            background: #0056b3; /* Color for the filled part of the slider */
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Scholarship Details</h1>
+        
+        <!-- Filter form with dropdowns and input for deadline -->
+        <form method="POST" class="mb-4">
+            <div class="form-row">
+                <div class="col-md-3">
+                    <label for="location">Location</label>
+                    <select name="location" class="form-control" id="location">
+                        <option value="">Select a location</option>
+                        {% for location in unique_locations %}
+                            <option value="{{ location }}">{{ location }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="deadline">Deadline</label>
+                    <input type="date" name="deadline" class="form-control" aria-label="Deadline" value="{{ request.form.get('deadline', '') }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="level">Year of Study</label>
+                    <select name="level" class="form-control" id="level">
+                        <option value="">Select Year of Study</option>
+                        <option value="College freshman" {% if request.form.level == 'College freshman' %}selected{% endif %}>College freshman</option>
+                        <option value="College sophomore" {% if request.form.level == 'College sophomore' %}selected{% endif %}>College sophomore</option>
+                        <option value="College junior" {% if request.form.level == 'College junior' %}selected{% endif %}>College junior</option>
+                        <option value="College senior" {% if request.form.level == 'College senior' %}selected{% endif %}>College senior</option>
+                        <option value="Master's-level study" {% if request.form.level == "Master's-level study" %}selected{% endif %}>Master's-level study</option>
+                        <option value="Doctoral-level study" {% if request.form.level == "Doctoral-level study" %}selected{% endif %}>Doctoral-level study</option>
+                        <option value="High school senior" {% if request.form.level == "High school senior" %}selected{% endif %}>High school senior</option>
+                    </select>
+                </div>
+                <div class="col-md-3 slider-container">
+                    <label for="amount">Amount</label>
+                    <div id="amount_range"></div>
+                    <input type="hidden" name="min_amount" id="min_amount" value="0">
+                    <input type="hidden" name="max_amount" id="max_amount" value="100000">
+                    <p>Selected Amount: <span id="amount_value">0 - 100000</span></p>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Filter</button>
+        </form>
+
+        <div class="table-container">
+            <table class="table table-bordered mt-4">
+                <thead>
+                    <tr>
+                        <th>Scholarship Name</th>
+                        <th>Deadline</th>
+                        <th>Amount</th>
+                        <th>Description</th>
+                        <th>Location</th>
+                        <th>Level</th>
+                        <th>Apply Link</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for scholarship in scholarships %}
+                    <tr>
+                        <td>{{ scholarship.scholarship_name }}</td>
+                        <td>
+                            {% if scholarship.deadline in ['Rolling', 'None'] %}
+                                {{ scholarship.deadline }}
+                            {% else %}
+                                {{ scholarship.deadline }}
+                            {% endif %}
+                        </td>
+                        <td>{{ scholarship.amount }}</td>
+                        <td>{{ scholarship.description }}</td>
+                        <td>
+                            {{ scholarship.location }}
+                            {% if scholarship.location | lower == "no geographic restrictions" %}
+                                (Available globally)
+                            {% endif %}
+                        </td>
+                        <td>{{ scholarship.level }}</td>
+                        <td>
+                            <a class="apply-link" href="{{ apply_links[scholarship.scholarship_name] }}" target="_blank">Apply Online <i class="fas fa-external-link-alt"></i></a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2024 Scholarship Portal</p>
+            <p>Contact us: info@scholarshipportal.com | Phone: (123) 456-7890</p>
+            <p>
+                <a href="/home">Home</a> | 
+                <a href="/about">About Us</a>
+            </p>
+        </div>
+        
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.3/nouislider.min.js"></script>
+    <script>
+        const amountRange = document.getElementById('amount_range');
+        const minAmountInput = document.getElementById('min_amount');
+        const maxAmountInput = document.getElementById('max_amount');
+        const amountDisplay = document.getElementById('amount_value');
+
+        // Create the slider
+        noUiSlider.create(amountRange, {
+            start: [0, 100000], // initial values
+            connect: true, // display a bar between the handles
+            range: {
+                'min': 0,
+                'max': 100000
+            },
+            step: 100 // step size
+        });
+
+        // Update hidden inputs and display on slider change
+        amountRange.noUiSlider.on('update', function(values, handle) {
+            minAmountInput.value = Math.round(values[0]);
+            maxAmountInput.value = Math.round(values[1]);
+            amountDisplay.innerText = `${Math.round(values[0])} - ${Math.round(values[1])}`;
+        });
+    </script>
+</body>
+</html>
